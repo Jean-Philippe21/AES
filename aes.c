@@ -537,10 +537,7 @@ void aes_mixcolumns(aes_block_t *state)
     				state->mat[1][i]^
     				state->mat[2][i]^
     				aes_xtime(state->mat[3][i]);
-  
-    	
-    	
-        
+
     }
     
     for( uint32_t i=0; i<4; i++){
@@ -563,7 +560,26 @@ void aes_mixcolumns(aes_block_t *state)
 uint8_t aes_multiply(uint8_t val1, uint8_t val2)
 {
     /* write your code here */
+    uint8_t result=0;
+    
+    if(val2==((uint8_t)0x0e)){
+    	result = aes_xtime(aes_xtime(aes_xtime(val1)^((uint8_t)0x1b))^((uint8_t)0x1b));
+    }
+    
+    if(val2==((uint8_t)0x0b)){
+    	result = aes_xtime(aes_xtime(aes_xtime(val1))^((uint8_t)0x1b))^((uint8_t)0x1b);
+    }
    
+    if(val2==((uint8_t)0x0d)){
+    	result = aes_xtime(aes_xtime(aes_xtime(val1)^((uint8_t)0x1b)))^((uint8_t)0x1b);
+    }
+    
+    if(val2==((uint8_t)0x09)){
+    	result = aes_xtime(aes_xtime(aes_xtime(val1)))^((uint8_t)0x1b);
+    }
+    
+    return result;
+    
 }
 
 /**
@@ -573,6 +589,47 @@ uint8_t aes_multiply(uint8_t val1, uint8_t val2)
 void aes_invmixcolumns(aes_block_t *state)
 {
     /* write your code here */
+    aes_block_t state_temp;
+    
+    for( uint32_t i=0; i<4; i++){
+    	state_temp.mat[0][i] = 	aes_multiply(state->mat[0][i],(uint8_t)0x0e)^
+    				aes_multiply(state->mat[1][i],(uint8_t)0x0b)^
+    				aes_multiply(state->mat[2][i],(uint8_t)0x0d)^
+    				aes_multiply(state->mat[3][i],(uint8_t)0x09);
+    				
+    				
+    				
+    	state_temp.mat[1][i] = 	aes_multiply(state->mat[0][i],(uint8_t)0x09)^
+    				aes_multiply(state->mat[1][i],(uint8_t)0x0e)^
+    				aes_multiply(state->mat[2][i],(uint8_t)0x0b)^
+    				aes_multiply(state->mat[3][i],(uint8_t)0x0d);
+    				
+    				
+    				
+    	state_temp.mat[2][i] = 	aes_multiply(state->mat[0][i],(uint8_t)0x0d)^
+    				aes_multiply(state->mat[1][i],(uint8_t)0x09)^
+    				aes_multiply(state->mat[2][i],(uint8_t)0x0e)^
+    				aes_multiply(state->mat[3][i],(uint8_t)0x0b);
+    	
+    	
+    	
+    				
+    	state_temp.mat[3][i] = 	aes_multiply(state->mat[0][i],(uint8_t)0x0b)^
+    				aes_multiply(state->mat[1][i],(uint8_t)0x0d)^
+  				aes_multiply(state->mat[2][i],(uint8_t)0x09)^
+  				aes_multiply(state->mat[3][i],(uint8_t)0x0e);
+  				
+        
+    }
+    
+    for( uint32_t i=0; i<4; i++){
+    	 for( uint32_t j=0; j<4; j++){
+    	 	state->mat[i][j]=state_temp.mat[i][j];
+    	 	//printf("\t%x",state_temp.mat[i][j]);
+    	 }
+    }
+    
+    aes_mat2block(state);
 }
 
 /**
