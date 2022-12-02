@@ -83,17 +83,17 @@ void aes_cipher(aes_block_t *ciphered_block, aes_block_t *clear_block,aes_key_t 
 	    	    aes_shiftrows(ciphered_block);
 	    	    #ifdef DBG_LOG
 		    {
-			    char *msg = "s_row";
-			    log_print_block(ciphered_block, msg, strlen(msg), LOG_MODE_BYTE_SEQ);
-			    log_write_block(ciphered_block, msg, strlen(msg));
+			char *msg = "s_row";
+			log_print_block(ciphered_block, msg, strlen(msg), LOG_MODE_BYTE_SEQ);
+			log_write_block(ciphered_block, msg, strlen(msg));
 		    }
 		    #endif /*  DBG_LOG */
 	    	    aes_mixcolumns(ciphered_block);
 	    	    #ifdef DBG_LOG
 		    {
-			    char *msg = "m_col";
-			    log_print_block(ciphered_block, msg, strlen(msg), LOG_MODE_BYTE_SEQ);
-			    log_write_block(ciphered_block, msg, strlen(msg));
+			char *msg = "m_col";
+			log_print_block(ciphered_block, msg, strlen(msg), LOG_MODE_BYTE_SEQ);
+			log_write_block(ciphered_block, msg, strlen(msg));
 		    }
 		    #endif /*  DBG_LOG */
 		    #ifdef DBG_LOG
@@ -667,19 +667,19 @@ uint8_t aes_multiply(uint8_t val1, uint8_t val2)
     uint8_t result=0;
     
     if(val2==((uint8_t)0x0e)){
-    	result = aes_xtime(aes_xtime(aes_xtime(val1)^val1)^(val1));
+    	result = aes_xtime(aes_xtime(aes_xtime(val1)^((uint8_t)0x1b))^(((uint8_t)0x1b)));
     }
     
     if(val2==((uint8_t)0x0b)){
-    	result = aes_xtime(aes_xtime(aes_xtime(val1))^(val1))^(val1);
+    	result = aes_xtime(aes_xtime(aes_xtime(val1))^(((uint8_t)0x1b)))^((uint8_t)0x1b);
     }
    
     if(val2==((uint8_t)0x0d)){
-    	result = aes_xtime(aes_xtime(aes_xtime(val1)^(val1)))^val1;
+    	result = aes_xtime(aes_xtime(aes_xtime(val1)^((uint8_t)0x1b)))^(uint8_t)0x1b;
     }
     
     if(val2==((uint8_t)0x09)){
-    	result = aes_xtime(aes_xtime(aes_xtime(val1)))^val1;
+    	result = aes_xtime(aes_xtime(aes_xtime(val1)))^(uint8_t)0x1b;
     }
     
     return result;
