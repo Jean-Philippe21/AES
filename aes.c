@@ -152,6 +152,110 @@ void aes_decipher(aes_block_t *clear_block, aes_block_t *ciphered_block,
                   aes_key_t *decipher_key)
 {
     /* write your code here */
+    /* parameter verification */
+    if (clear_block == NULL || ciphered_block==NULL || decipher_key==NULL) {
+        fprintf(stderr, "[ERROR] aes_cipher: bad input parameter\n");
+        exit(EXIT_FAILURE);
+    }
+    
+            /* cipher_key expansion */ 
+	    aes_key_t *round_keys[11];
+	    aes_key_t *(*expanded_keys)[]= &round_keys;
+	    for (uint32_t i=0;i<11;i++) {
+		round_keys[i] = calloc(1, sizeof(aes_key_t));
+	    }
+	    memcpy(round_keys[10], decipher_key, sizeof(aes_key_t));
+	    aes_keyexpansion(expanded_keys,decipher_key);
+	    
+	    
+	    /* prepare AES ciphered_block */
+	    memcpy(ciphered_block->byte,clear_block->byte,sizeof(clear_block->byte));
+	    aes_block2mat(ciphered_block);
+	    
+	    #ifdef DBG_LOG
+	    {
+		char *msg = "iinput";
+		log_print_block(ciphered_block, msg, strlen(msg), LOG_MODE_BYTE_SEQ);
+		log_write_block(ciphered_block, msg, strlen(msg));
+	    }
+	    {
+		char *msg = "ik_sch";
+		log_print_key(decipher_key, msg, strlen(msg), LOG_MODE_BYTE_SEQ);
+		log_write_key(decipher_key, msg, strlen(msg));
+	    }
+	    #endif /*  DBG_LOG */
+	    
+	    /*Initial Round*/
+	    aes_addroundkey(ciphered_block,round_keys[10]);
+	    
+	    	    #ifdef DBG_LOG
+		    {
+			char *msg = "istart";
+			log_print_block(ciphered_block, msg, strlen(msg), LOG_MODE_BYTE_SEQ);
+			log_write_block(ciphered_block, msg, strlen(msg));
+		    }
+		    #endif /*  DBG_LOG */
+	    aes_invshiftrows(ciphered_block);
+	    	    #ifdef DBG_LOG
+		    {
+			    char *msg = "is_row";
+			    log_print_block(ciphered_block, msg, strlen(msg), LOG_MODE_BYTE_SEQ);
+			    log_write_block(ciphered_block, msg, strlen(msg));
+		    }
+		    #endif /*  DBG_LOG */
+	    aes_invsubbytes(ciphered_block);
+		    #ifdef DBG_LOG
+		    {
+			char *msg = "is_box";
+			log_print_block(ciphered_block, msg, strlen(msg), LOG_MODE_BYTE_SEQ);
+			log_write_block(ciphered_block, msg, strlen(msg));
+		    }
+		    #endif /*  DBG_LOG */
+    	   for (uint32_t i=9;i>0;i--){
+    	   	   
+    	   	    aes_addroundkey(ciphered_block,round_keys[i]);
+	    	    #ifdef DBG_LOG
+		    {
+			char *msg = "istart";
+			log_print_block(ciphered_block, msg, strlen(msg), LOG_MODE_BYTE_SEQ);
+			log_write_block(ciphered_block, msg, strlen(msg));
+		    }
+		    #endif /*  DBG_LOG */
+		    aes_invmixcolumns(ciphered_block);
+	    	    #ifdef DBG_LOG
+		    {
+			    char *msg = "im_col";
+			    log_print_block(ciphered_block, msg, strlen(msg), LOG_MODE_BYTE_SEQ);
+			    log_write_block(ciphered_block, msg, strlen(msg));
+		    }
+		    #endif /*  DBG_LOG */
+		    aes_invshiftrows(ciphered_block);
+	    	    #ifdef DBG_LOG
+		    {
+			    char *msg = "is_row";
+			    log_print_block(ciphered_block, msg, strlen(msg), LOG_MODE_BYTE_SEQ);
+			    log_write_block(ciphered_block, msg, strlen(msg));
+		    }
+		    #endif /*  DBG_LOG */
+	    	    aes_invsubbytes(ciphered_block);
+		    #ifdef DBG_LOG
+		    {
+			char *msg = "is_box";
+			log_print_block(ciphered_block, msg, strlen(msg), LOG_MODE_BYTE_SEQ);
+			log_write_block(ciphered_block, msg, strlen(msg));
+		    }
+		    #endif /*  DBG_LOG */
+		   
+	   }
+	   
+	   aes_addroundkey(ciphered_block,round_keys[0]);
+	    	    #ifdef DBG_LOG
+		    {
+			char *msg = "ioutput";
+			log_print_block(ciphered_block, msg, strlen(msg), LOG_MODE_BYTE_SEQ);
+			log_write_block(ciphered_block, msg, strlen(msg));
+		    }
+		    #endif /*  DBG_LOG */
     
 }
 
@@ -491,19 +595,19 @@ uint8_t aes_xtime(uint8_t in_val)
     /* write your code here */
     uint8_t  result;
     
-    if(in_val==0){
+    /*if(in_val==0){
 
 	 fprintf(stderr, "[ERROR] aes_multiply: bad input parameter\n");
 
-	 exit(EXIT_FAILURE);
+	 exit(EXIT_FAILURE);*/
 
-    }else{
+    //}else{
     	result = in_val << 1;
    	if((0x80&in_val)==0x80){
    		
     		result = result^((uint8_t)0x1b);
    	}
-    }
+    //}
     
     return result;
 }
@@ -563,19 +667,19 @@ uint8_t aes_multiply(uint8_t val1, uint8_t val2)
     uint8_t result=0;
     
     if(val2==((uint8_t)0x0e)){
-    	result = aes_xtime(aes_xtime(aes_xtime(val1)^((uint8_t)0x1b))^((uint8_t)0x1b));
+    	result = aes_xtime(aes_xtime(aes_xtime(val1)^val1)^(val1));
     }
     
     if(val2==((uint8_t)0x0b)){
-    	result = aes_xtime(aes_xtime(aes_xtime(val1))^((uint8_t)0x1b))^((uint8_t)0x1b);
+    	result = aes_xtime(aes_xtime(aes_xtime(val1))^(val1))^(val1);
     }
    
     if(val2==((uint8_t)0x0d)){
-    	result = aes_xtime(aes_xtime(aes_xtime(val1)^((uint8_t)0x1b)))^((uint8_t)0x1b);
+    	result = aes_xtime(aes_xtime(aes_xtime(val1)^(val1)))^val1;
     }
     
     if(val2==((uint8_t)0x09)){
-    	result = aes_xtime(aes_xtime(aes_xtime(val1)))^((uint8_t)0x1b);
+    	result = aes_xtime(aes_xtime(aes_xtime(val1)))^val1;
     }
     
     return result;
