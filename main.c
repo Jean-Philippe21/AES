@@ -163,6 +163,7 @@ void part2(void)
     
     //measure_exectime();
     
+    
 }
 
 /**
@@ -264,17 +265,37 @@ void part3(void)
 */
 void part4(void)
 {
-    uint8_t clear_text[16] = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
+    /*uint8_t clear_text[16] = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
                               0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff};
     uint8_t key[16] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
-                       0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f};
+                       0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f};*/
+    uint8_t clear_text[16] = {0x69, 0xc4, 0xe0, 0xd8, 0x6a, 0x7b, 0x04, 0x30,
+                              0xd8, 0xcd, 0xb7, 0x80, 0x70, 0xb4, 0xc5, 0x5a};
+    uint8_t key[16] = {0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6,
+                       0xab, 0xf7, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x3c};
     
-    aes_key_t cipher_key;
     aes_block_t clear_block, ciphered_block, deciphered_block;
     uint64_t timestamp_nsec;
     struct timespec timestamp;
 
     /* Write your code here */
+    
+    aes_key_t decipher_key;
+    
+    /* set data to 0 */
+    memset(&decipher_key, 0, sizeof(aes_key_t));
+    memset(&clear_block, 0, sizeof(aes_block_t));
+    memset(&ciphered_block, 0, sizeof(aes_block_t));
+    memset(&deciphered_block, 0, sizeof(aes_block_t));
+    /* prepare AES state */
+    memcpy(&clear_block.byte, clear_text, sizeof(clear_text));
+    aes_block2mat(&clear_block);
+    /* prepare AES key */
+    memcpy(&decipher_key.byte, key, sizeof(key));
+    decipher_key.length = AES128_KEY_SIZE/8;
+    aes_key2mat(&decipher_key);
+    
+    aes_decipher(&clear_block, &ciphered_block,&decipher_key);
 
     /* deactivate DBG_LOG to measure time */
 #ifndef DBG_LOG
@@ -287,6 +308,7 @@ void part4(void)
 */
 void measure_exectime(void)
 {
+    #if 0
     uint8_t clear_text[16] = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
                               0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff};
     uint8_t key[16] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
@@ -319,6 +341,49 @@ void measure_exectime(void)
 	 
 	 
 	    aes_cipher(&ciphered_block,&clear_block,&cipher_key);
+    }
+    
+    clock_t end = clock();
+    
+    // calcule le temps écoulé en trouvant la différence (end - begin) et divisant la différence par CLOCKS_PER_SEC pour convertir en secondes
+    time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
+    
+    printf("The elapsed time is %f seconds\n\n", time_spent);
+    
+    #endif
+    uint8_t clear_text[16] = {0x69, 0xc4, 0xe0, 0xd8, 0x6a, 0x7b, 0x04, 0x30,
+                              0xd8, 0xcd, 0xb7, 0x80, 0x70, 0xb4, 0xc5, 0x5a};
+    uint8_t key[16] = {0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6,
+                       0xab, 0xf7, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x3c};
+    
+    aes_key_t cipher_key;
+    aes_block_t clear_block, ciphered_block, deciphered_block;
+    uint64_t timestamp_nsec;
+    struct timespec timestamp;
+
+    /* Write your code here */
+    
+    aes_key_t decipher_key;
+    
+    //pour stocker le temps d'exécution du code
+    double time_spent = 0;
+    
+    clock_t begin = clock();
+    
+    for (uint32_t r=0;r<1000;r++) {
+    	/* set data to 0 */
+	    memset(&decipher_key, 0, sizeof(aes_key_t));
+	    memset(&clear_block, 0, sizeof(aes_block_t));
+	    memset(&ciphered_block, 0, sizeof(aes_block_t));
+	    /* prepare AES state */
+	    memcpy(&clear_block.byte, clear_text, sizeof(clear_text));
+	    aes_block2mat(&clear_block);
+	    /* prepare AES key */
+	    memcpy(&decipher_key.byte, key, sizeof(key));
+	    decipher_key.length = AES128_KEY_SIZE/8;
+	    aes_key2mat(&decipher_key);
+	    
+	    aes_decipher(&clear_block, &ciphered_block,&decipher_key);
     }
     
     clock_t end = clock();
