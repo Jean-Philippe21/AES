@@ -667,19 +667,19 @@ uint8_t aes_multiply(uint8_t val1, uint8_t val2)
     uint8_t result=0;
     
     if(val2==((uint8_t)0x0e)){
-    	result = aes_xtime(aes_xtime(aes_xtime(val1)^((uint8_t)0x1b))^(((uint8_t)0x1b)));
+    	result = aes_xtime((aes_xtime((aes_xtime(val1)^val1)))^val1);
     }
     
     if(val2==((uint8_t)0x0b)){
-    	result = aes_xtime(aes_xtime(aes_xtime(val1))^(((uint8_t)0x1b)))^((uint8_t)0x1b);
+    	result = aes_xtime(aes_xtime(aes_xtime(val1))^val1)^val1;
     }
    
     if(val2==((uint8_t)0x0d)){
-    	result = aes_xtime(aes_xtime(aes_xtime(val1)^((uint8_t)0x1b)))^(uint8_t)0x1b;
+    	result = aes_xtime(aes_xtime((aes_xtime(val1)^val1)))^val1;
     }
     
     if(val2==((uint8_t)0x09)){
-    	result = aes_xtime(aes_xtime(aes_xtime(val1)))^(uint8_t)0x1b;
+    	result = aes_xtime(aes_xtime(aes_xtime(val1)))^val1;
     }
     
     return result;
